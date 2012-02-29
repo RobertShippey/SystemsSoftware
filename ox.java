@@ -1,4 +1,7 @@
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 public class ox {
     
     private String[][] board = new String[3][3];
@@ -13,6 +16,7 @@ public class ox {
         System.out.println("Welcome to Tic-Tac-Toe!");
         System.out.println("You know the rules!");
         System.out.println("Enter coords xy (eg, 21). x is row, y is column.");
+        game.draw();
         while(!game.hasEnded()){
             System.out.println(game.player() + ": Enter your position... ");
             game.takeTurn(cmd.readLine());
@@ -57,12 +61,14 @@ public class ox {
     }
     
     public String player() {
-        if(player.equals("X")){
-            return "X";
-        } else if (player.equals("O")) {
-            return "O";
+        switch (player) {
+            case "X":
+                return "X";
+            case "O":
+                return "O";
+            default:
+                return "ERR";
         }
-        return "ERR";
     }
     public void takeTurn(String go) {
         int x,y;
@@ -72,10 +78,13 @@ public class ox {
         nextPlayer();
     }
     private void nextPlayer(){
-        if(player.equals("X")){
-            player = "O";
-        } else if (player.equals("O")) {
-            player = "X";
+        switch (player) {
+            case "X":
+                player = "O";
+                break;
+            case "O":
+                player = "X";
+                break;
         }
     }
     
