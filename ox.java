@@ -1,7 +1,6 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
 /**
  * Tic-Tac-Toe game.
  * @author Robert Shippey
@@ -14,6 +13,7 @@ public class ox {
     private String _player;
     private int _turns;
     private boolean _invalid;
+    private NetGame _net;
 
     /**
      * Entry point.
@@ -22,8 +22,15 @@ public class ox {
      */
     public static void main(String[] args) throws IOException {
         BufferedReader cmd = new BufferedReader(new InputStreamReader(System.in));
-        ox game = new ox();
-
+        ox game = new ox(null);
+        System.out.println("Networked game? y/n");
+        if(cmd.readLine().equals("y")){
+            game = null;
+            game = new ox(new NetGame());
+            System.out.println("Enter the IP of your opponent (eg 192.168.0.1)");
+            game.setOpponent(cmd.readLine());
+        }
+        
         System.out.println("Welcome to Tic-Tac-Toe!");
         System.out.println("You know the rules!");
         System.out.println("Enter coords xy (eg, 21). x is row, y is column.");
@@ -52,7 +59,7 @@ public class ox {
     /**
      *  Constructs a game ready to be played.
      */
-    public ox() {
+    public ox(NetGame n) {
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 3; x++) {
                 _board[x][y] = " ";
@@ -64,6 +71,7 @@ public class ox {
         _player = "O";
         _turns = 0;
         _invalid = false;
+        _net = n;
     }
 
     /**
@@ -112,6 +120,8 @@ public class ox {
             x = Integer.parseInt(go.substring(0, 1));
             y = Integer.parseInt(go.substring(1, 2));
             _board[x][y] = _player;
+            if(_net!=null){
+            _net.sendMove(x, y);}
         } catch (Exception e) {
             //System.err.println(e);
             _invalid = true;
@@ -121,6 +131,22 @@ public class ox {
         _turns++;
         nextPlayer();
     }
+    
+        public void takeTurn(int[] go) {
+        int x, y;
+        try {
+            x = go[0];
+            y = go[1];
+            _board[x][y] = _player;
+        } catch (Exception e) {
+            //System.err.println(e);
+            _invalid = true;
+            return;
+        }
+        _invalid = false;
+        _turns++;
+        nextPlayer();
+        }
 
     /**
      *  Moves the game state to the the next player.
@@ -130,6 +156,9 @@ public class ox {
             _player = "O";
         } else if (_player.equals("O")) {
             _player = "X";
+            if(_net!=null){
+            doNetworkMove();
+        }
         }
     }
 
@@ -172,5 +201,18 @@ public class ox {
      */
     public boolean inputInvalid(){
         return _invalid;
+    }
+    
+    private void doNetworkMove(){
+        int[] move = new int[2];
+        move = _net.recieveMove();
+        takeTurn(move);
+        System.out.println("Networked X took a move.");
+    }
+    
+    public void setOpponent(String IPAddr)throws IOException{
+        if(_net!=null){
+        _net.setup(IPAddr);
+        }
     }
 }
