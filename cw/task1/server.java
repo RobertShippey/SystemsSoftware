@@ -3,30 +3,23 @@ import java.io.*;
 
 public class server {
     
-    public static void main (String[] args) {
-        try {
-        BufferedReader cmd = new BufferedReader(new InputStreamReader(System.in));
-        ServerSocket serv = new ServerSocket(2000);
-       	System.out.println("Waiting...");
-        Socket client = serv.accept();
+    public static void main (String[] args) throws Exception {
         
-        ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
-        ObjectInputStream in = new ObjectInputStream(client.getInputStream());
+        DatagramSocket mySocket = new DatagramSocket(2000);
         
-        String m = (String) in.readObject();
-        System.out.println("Client sent: ");
-        System.out.println(m);
+        byte[] buffer = new byte[50];
+        DatagramPacket recievedPacket = new DatagramPacket(buffer, buffer.length);
+        mySocket.receive(recievedPacket);
         
-        System.out.println("Enter server's response: ");
-        m = cmd.readLine();
-        out.writeObject(m);
-        System.out.println("Done!");
-        } catch (IOException e){
-            System.err.println(e.getMessage());
-            System.exit(0);
-        } catch (ClassNotFoundException cnf) {
-            System.err.println(cnf.getMessage());
-            System.exit(0);
-        }
+        String text = new String (recievedPacket.getData(), 0, recievedPacket.getLength());
+       System.out.println(text);
+        
+        byte[] myName = "Robert Shippey".getBytes();
+        
+        InetAddress clientIP = recievedPacket.getAddress();
+        int clientPort = recievedPacket.getPort();
+        DatagramPacket sendingPacket = new DatagramPacket(myName, myName.length, clientIP, clientPort);
+        mySocket.send(sendingPacket);
+
     }
 }
